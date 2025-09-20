@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #a7bfe8, #619aee);
+        }
+        .tab-btn {
+            @apply w-full py-3 px-6 rounded-lg font-bold text-white transition-colors duration-200 ease-in-out transform;
+        }
+        .tab-btn.active {
+            @apply bg-indigo-700 text-white shadow-md;
+        }
+        .tab-btn:hover:not(.active) {
+            @apply bg-indigo-500;
+        }
+        .card {
+            @apply transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-xl cursor-pointer;
+            background-color: #ffffff;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInSlideUp 0.5s ease-out forwards;
+        }
+        .match-score {
+            @apply inline-block px-3 py-1 text-sm font-semibold rounded-full;
+        }
+        .match-score-high {
+            @apply bg-green-100 text-green-700;
+        }
+        .match-score-medium {
+            @apply bg-yellow-100 text-yellow-700;
+        }
+        .match-score-low {
+            @apply bg-red-100 text-red-700;
+        }
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        .modal-content-container {
+            transition: all 0.3s ease-in-out;
+        }
+        @keyframes fadeInSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Splash screen styles */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a202c; /* Dark background for contrast */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease-out;
+        }
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none; /* Prevents clicks on the fading element */
+        }
+        #splash-logo {
+            color: white;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Main content styles for fade-in */
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        #main-content.visible {
+            opacity: 1;
+        }
+        /* Page transition classes */
+        .page-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <svg id="splash-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="h-40 w-40">
+            <path fill="currentColor" d="M50 0 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 C22.4 100 0 77.6 0 50 C0 22.4 22.4 0 50 0 Z M50 10 A40 40 0 0 0 50 90 A40 40 0 0 0 50 10 Z" opacity="0.1"></path>
+            <path fill="currentColor" d="M68.5 35.8 C68.5 35.8 61.5 28.8 55.4 33.7 C50.5 37.5 48.7 44.4 51.5 50.1 C54.2 55.8 59.9 59.7 65.7 59.7 C71.5 59.7 75 55.4 75 50.4 C75 45.4 72.8 41.5 68.5 35.8 Z M31.5 35.8 C31.5 35.8 38.5 28.8 44.6 33.7 C49.5 37.5 51.3 44.4 48.5 50.1 C45.8 55.8 40.1 59.7 34.3 59.7 C28.5 59.7 25 55.4 25 50.4 C25 45.4 27.2 41.5 31.5 35.8 Z"></path>
+            <path fill="currentColor" d="M50 49.8 C48.4 51.4 46.8 53 45.2 54.6 C43.6 56.2 42 57.8 40.4 59.4 C38.8 61 37.2 62.6 35.6 64.2 C35.6 64.2 36.6 65.2 38.2 66.8 C39.8 68.4 41.4 70 43 71.6 C44.6 73.2 46.2 74.8 47.8 76.4 C49.4 78 50 80 50 80 C50 80 50.6 78 52.2 76.4 C53.8 74.8 55.4 73.2 57 71.6 C58.6 70 60.2 68.4 61.8 66.8 C63.4 65.2 64.4 64.2 64.4 64.2 C62.8 62.6 61.2 61 59.6 59.4 C58 57.8 56.4 56.2 54.8 54.6 C53.2 53 51.6 51.4 50 49.8 Z"></path>
+        </svg>
+    </div>
+
+    <!-- Main Content Container (Initially hidden) -->
+    <div id="main-content">
+        <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full mt-8 mb-8">
+            
+            <!-- Main Application View -->
+            <div id="main-view">
+                <!-- Logo -->
+                <div class="flex justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="h-20 w-20 text-indigo-600">
+                        <path fill="currentColor" d="M50 0 C77.6 0 100 22.4 100 50 C100 77.6 77.6 100 50 100 C22.4 100 0 77.6 0 50 C0 22.4 22.4 0 50 0 Z M50 10 A40 40 0 0 0 50 90 A40 40 0 0 0 50 10 Z" opacity="0.1"></path>
+                        <path fill="currentColor" d="M68.5 35.8 C68.5 35.8 61.5 28.8 55.4 33.7 C50.5 37.5 48.7 44.4 51.5 50.1 C54.2 55.8 59.9 59.7 65.7 59.7 C71.5 59.7 75 55.4 75 50.4 C75 45.4 72.8 41.5 68.5 35.8 Z M31.5 35.8 C31.5 35.8 38.5 28.8 44.6 33.7 C49.5 37.5 51.3 44.4 48.5 50.1 C45.8 55.8 40.1 59.7 34.3 59.7 C28.5 59.7 25 55.4 25 50.4 C25 45.4 27.2 41.5 31.5 35.8 Z"></path>
+                        <path fill="currentColor" d="M50 49.8 C48.4 51.4 46.8 53 45.2 54.6 C43.6 56.2 42 57.8 40.4 59.4 C38.8 61 37.2 62.6 35.6 64.2 C35.6 64.2 36.6 65.2 38.2 66.8 C39.8 68.4 41.4 70 43 71.6 C44.6 73.2 46.2 74.8 47.8 76.4 C49.4 78 50 80 50 80 C50 80 50.6 78 52.2 76.4 C53.8 74.8 55.4 73.2 57 71.6 C58.6 70 60.2 68.4 61.8 66.8 C63.4 65.2 64.4 64.2 64.4 64.2 C62.8 62.6 61.2 61 59.6 59.4 C58 57.8 56.4 56.2 54.8 54.6 C53.2 53 51.6 51.4 50 49.8 Z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-2">Community Connect</h1>
+                <p class="text-gray-500 text-center mb-8">Connecting great people with local community needs.</p>
+
+                <!-- Tab Navigation -->
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
+                    <div class="bg-indigo-600 rounded-xl shadow-md p-2 w-full md:w-auto">
+                        <button id="volunteer-tab" class="tab-btn active">Volunteer View</button>
+                    </div>
+                    <div class="bg-indigo-600 rounded-xl shadow-md p-2 w-full md:w-auto">
+                        <button id="organization-tab" class="tab-btn">Organization View</button>
+                    </div>
+                </div>
+
+                <!-- Volunteer View Content -->
+                <div id="volunteer-view" class="space-y-6">
+                    <!-- Volunteer Profile Selection -->
+                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <label for="volunteer-select" class="block text-lg font-semibold text-gray-700 mb-2">Select Your Profile:</label>
+                        <select id="volunteer-select" class="w-full p-3 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            <!-- Options populated by JavaScript -->
+                        </select>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="find-volunteer-matches-btn" class="w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out">
+                        Find My Best Matches
+                    </button>
+                    
+                    <!-- Loading Indicator -->
+                    <div id="loading-spinner" class="hidden text-center py-8">
+                        <div class="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                        <p class="text-gray-500 mt-4">Analyzing opportunities...</p>
+                    </div>
+
+                    <!-- Matched Opportunities Display (Initially Hidden) -->
+                    <div id="volunteer-results-container" class="mt-8 space-y-4 hidden">
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Top Matched Opportunities</h2>
+                        <div id="opportunity-list" class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            <p class="text-center text-gray-400 mt-10 col-span-full">Select a volunteer and click "Find My Best Matches" to see results.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization View Content (Hidden by default) -->
+                <div id="organization-view" class="space-y-6 hidden">
+                    <!-- Organization Profile Selection -->
+                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                        <label for="organization-select" class="block text-lg font-semibold text-gray-700 mb-2">Select an Organization:</label>
+                        <select id="organization-select" class="w-full p-3 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            <!-- Options populated by JavaScript -->
+                        </select>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="find-org-matches-btn" class="w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out">
+                        Find My Best Volunteer Matches
+                    </button>
+                    
+                    <!-- Matched Volunteers Display (Initially Hidden) -->
+                    <div id="organization-results-container" class="mt-8 space-y-4 hidden">
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Top Matched Volunteers</h2>
+                        <div id="volunteer-list" class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            <p class="text-center text-gray-400 mt-10 col-span-full">Select an organization and click "Find My Best Volunteer Matches" to see results.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button to open "List Your Profile" page -->
+                <div class="mt-12 text-center">
+                    <button id="go-to-add-profile-btn" class="px-6 py-3 bg-red-500 text-white font-bold rounded-full shadow-lg hover:bg-red-600 transition-all duration-300 ease-in-out">
+                        List Your Profile
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Profile Page (Hidden by default) -->
+            <div id="add-profile-page" class="page-hidden">
+                <button id="back-to-main-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors mb-4">
+                    ← Go Back
+                </button>
+                <div class="bg-red-50 p-8 rounded-2xl border border-red-200">
+                    <h2 class="text-2xl font-bold text-gray-800 text-center">Add Your Profile</h2>
+                    <form id="add-profile-form" class="space-y-4 mt-6">
+                        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                            <label for="profile-type-select" class="block text-lg font-semibold text-gray-700 mb-2">I am a...</label>
+                            <select id="profile-type-select" class="w-full p-3 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                                <option value="volunteer">Volunteer</option>
+                                <option value="organization">Organization</option>
+                            </select>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name / Organization Name</label>
+                            <input type="text" id="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700">Location (e.g., San Francisco)</label>
+                            <input type="text" id="location" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                        </div>
+                        
+                        <!-- Volunteer-specific Fields -->
+                        <div id="volunteer-fields" class="form-fields-container">
+                            <div>
+                                <label for="skills" class="block text-sm font-medium text-gray-700">Skills (comma-separated)</label>
+                                <input type="text" id="skills" placeholder="e.g., Tutoring, Event Planning" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="interests" class="block text-sm font-medium text-gray-700">Interests (comma-separated)</label>
+                                <input type="text" id="interests" placeholder="e.g., Education, Community Building" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="schedule" class="block text-sm font-medium text-gray-700">Available Days (comma-separated)</label>
+                                <input type="text" id="schedule" placeholder="e.g., Monday, Wednesday" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="legitimacy-score" class="block text-sm font-medium text-gray-700">Legitimacy Score (1-10)</label>
+                                <input type="number" id="legitimacy-score" min="1" max="10" value="7" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                        </div>
+
+                        <!-- Organization-specific Fields (Hidden by default) -->
+                        <div id="organization-fields" class="form-fields-container hidden">
+                            <div>
+                                <label for="title" class="block text-sm font-medium text-gray-700">Opportunity Title</label>
+                                <input type="text" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="about-org" class="block text-sm font-medium text-gray-700">About the Organization</label>
+                                <textarea id="about-org" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field"></textarea>
+                            </div>
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Opportunity Description</label>
+                                <textarea id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field"></textarea>
+                            </div>
+                            <div>
+                                <label for="skills-needed" class="block text-sm font-medium text-gray-700">Skills Needed (comma-separated)</label>
+                                <input type="text" id="skills-needed" placeholder="e.g., Coding, Mentoring" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="interests-match" class="block text-sm font-medium text-gray-700">Interests Match (comma-separated)</label>
+                                <input type="text" id="interests-match" placeholder="e.g., Technology, Education" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="schedule-needed" class="block text-sm font-medium text-gray-700">Schedule Needed (comma-separated)</label>
+                                <input type="text" id="schedule-needed" placeholder="e.g., Tuesday, Thursday" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                            <div>
+                                <label for="org-legitimacy" class="block text-sm font-medium text-gray-700">Legitimacy Score (1-10)</label>
+                                <input type="number" id="org-legitimacy" min="1" max="10" value="7" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 input-field">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 ease-in-out">
+                            Add Profile
+                        </button>
+                        <div id="add-profile-status" class="hidden text-center text-sm font-bold mt-2 animate-pulse"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal for showing details -->
+            <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-bg p-4">
+                <div class="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-xl transform transition-all duration-300 scale-95 opacity-0 modal-content-container max-h-[90vh] overflow-y-auto" id="modal-content">
+                    <div class="flex justify-end">
+                        <button id="modal-close-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="modal-body" class="mt-4">
+                        <!-- Content injected by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Data arrays
+        let volunteers = [
+            { id: "1", name: "Harsh Singh", location: "San Francisco", skills: ["Tutoring", "Event Planning"], interests: ["Education", "Community Building"], schedule: ["Monday", "Wednesday"], legitimacyScore: 9, email: "sarah.miller@example.com", phone: "555-123-4567" },
+            { id: "2", name: "Rachit Garg", location: "San Francisco", skills: ["Graphic Design", "Social Media Management"], interests: ["Arts & Culture", "Technology"], schedule: ["Tuesday", "Thursday"], legitimacyScore: 8, email: "david.chen@example.com", phone: "555-987-6543" },
+            { id: "3", name: "Aarav Chauhan", location: "Oakland", skills: ["Fundraising", "Volunteer Coordination"], interests: ["Environment", "Animal Welfare"], schedule: ["Saturday"], legitimacyScore: 10, email: "lisa.rodriguez@example.com", phone: "555-555-5555" },
+            { id: "4", name: "Chitresh Bhati", location: "San Jose", skills: ["Web Development", "Data Analysis"], interests: ["Technology", "Healthcare"], schedule: ["Monday", "Friday"], legitimacyScore: 7, email: "michael.johnson@example.com", phone: "555-222-3333" },
+            { id: "5", name: "Madhusudan Saini", location: "San Francisco", skills: ["Content Writing", "Public Speaking"], interests: ["Social Justice", "Human Rights"], schedule: ["Wednesday", "Thursday"], legitimacyScore: 9, email: "emily.white@example.com", phone: "555-444-5555" }
+        ];
+
+        let opportunities = [
+            { id: "org1", organization: "Tech for Good", title: "Coding Mentor", aboutOrg: "A nonprofit that provides free coding education to underserved youth.", description: "Mentor high school students in a beginner-friendly coding environment, helping them build foundational skills for future careers.", skillsNeeded: ["Coding", "Mentoring", "Patience"], interestsMatch: ["Technology", "Education"], scheduleNeeded: ["Tuesday", "Thursday"], location: "San Francisco", orgEmail: "info@techforgood.org", legitimacyScore: 10 },
+            { id: "org2", organization: "Urban Gardens Initiative", title: "Community Garden Volunteer", aboutOrg: "We create and maintain community gardens to promote sustainable living.", description: "Help with planting, weeding, and harvesting in our community gardens.", skillsNeeded: ["Gardening", "Teamwork"], interestsMatch: ["Environment", "Agriculture"], scheduleNeeded: ["Saturday"], location: "Oakland", orgEmail: "contact@urbangardens.org", legitimacyScore: 8 },
+            { id: "org3", organization: "Animal Shelter Aid", title: "Animal Caretaker", aboutOrg: "Dedicated to providing a safe haven for abandoned animals.", description: "Assist with feeding, cleaning, and playing with animals to ensure they are healthy and happy.", skillsNeeded: ["Animal Care", "Patience"], interestsMatch: ["Animal Welfare"], scheduleNeeded: ["Monday", "Wednesday", "Friday"], location: "San Jose", orgEmail: "volunteer@animalshelter.com", legitimacyScore: 9 },
+            { id: "org4", organization: "Healthy Hearts Foundation", title: "Event Organizer", aboutOrg: "Raising awareness and funds for cardiovascular disease research.", description: "Help plan and execute fundraising events, from small local gatherings to large charity galas.", skillsNeeded: ["Event Planning", "Fundraising"], interestsMatch: ["Healthcare", "Community Building"], scheduleNeeded: ["Friday", "Saturday"], location: "San Francisco", orgEmail: "events@healthyhearts.org", legitimacyScore: 8 },
+            { id: "org5", organization: "Literacy Leaders", title: "After-School Tutor", aboutOrg: "Empowering young students through literacy and reading programs.", description: "Provide one-on-one tutoring to elementary school students who need extra help with reading.", skillsNeeded: ["Tutoring", "Reading"], interestsMatch: ["Education", "Youth Development"], scheduleNeeded: ["Monday", "Wednesday"], location: "San Francisco", orgEmail: "info@literacyleaders.org", legitimacyScore: 9 }
+        ];
+        
+        // UI elements
+        const splashScreen = document.getElementById('splash-screen');
+        const mainContent = document.getElementById('main-content');
+        const mainView = document.getElementById('main-view');
+        const addProfilePage = document.getElementById('add-profile-page');
+        const volunteerTabBtn = document.getElementById('volunteer-tab');
+        const organizationTabBtn = document.getElementById('organization-tab');
+        const volunteerView = document.getElementById('volunteer-view');
+        const organizationView = document.getElementById('organization-view');
+        const volunteerSelect = document.getElementById('volunteer-select');
+        const findVolunteerMatchesBtn = document.getElementById('find-volunteer-matches-btn');
+        const opportunityList = document.getElementById('opportunity-list');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const organizationSelect = document.getElementById('organization-select');
+        const findOrgMatchesBtn = document.getElementById('find-org-matches-btn');
+        const volunteerList = document.getElementById('volunteer-list');
+        const modal = document.getElementById('modal');
+        const modalBody = document.getElementById('modal-body');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalContent = document.getElementById('modal-content');
+        const goToAddProfileBtn = document.getElementById('go-to-add-profile-btn');
+        const backToMainBtn = document.getElementById('back-to-main-btn');
+        const volunteerResultsContainer = document.getElementById('volunteer-results-container');
+        const organizationResultsContainer = document.getElementById('organization-results-container');
+
+        // Form elements for Add Profile
+        const addProfileForm = document.getElementById('add-profile-form');
+        const profileTypeSelect = document.getElementById('profile-type-select');
+        const volunteerFields = document.getElementById('volunteer-fields');
+        const organizationFields = document.getElementById('organization-fields');
+        const addProfileStatus = document.getElementById('add-profile-status');
+        
+        // Functions for switching between views
+        function switchTab(tab) {
+            volunteerView.classList.add('hidden');
+            organizationView.classList.add('hidden');
+            volunteerTabBtn.classList.remove('active');
+            organizationTabBtn.classList.remove('active');
+
+            // Clear and hide results when switching tabs
+            opportunityList.innerHTML = '<p class="text-center text-gray-400 mt-10 col-span-full">Select a volunteer and click "Find My Best Matches" to see results.</p>';
+            volunteerList.innerHTML = '<p class="text-center text-gray-400 mt-10 col-span-full">Select an organization and click "Find My Best Volunteer Matches" to see results.</p>';
+            volunteerResultsContainer.classList.add('hidden');
+            organizationResultsContainer.classList.add('hidden');
+
+            if (tab === 'volunteer') {
+                volunteerView.classList.remove('hidden');
+                volunteerTabBtn.classList.add('active');
+            } else if (tab === 'organization') {
+                organizationView.classList.remove('hidden');
+                organizationTabBtn.classList.add('active');
+            }
+        }
+
+        // Functions for the modal
+        function showModal(content) {
+            modalBody.innerHTML = content;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function hideModal() {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modalBody.innerHTML = '';
+            }, 300);
+        }
+
+        // Functions for populating select menus
+        function initializeSelects() {
+            volunteerSelect.innerHTML = '';
+            volunteers.forEach(volunteer => {
+                const option = document.createElement('option');
+                option.value = volunteer.id;
+                option.textContent = volunteer.name;
+                volunteerSelect.appendChild(option);
+            });
+            organizationSelect.innerHTML = '';
+            const orgNames = [...new Set(opportunities.map(o => o.organization))];
+            orgNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                organizationSelect.appendChild(option);
+            });
+        }
+        
+        // Functions for finding and rendering matches (Volunteer View)
+        function findVolunteerMatches() {
+            volunteerResultsContainer.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+            opportunityList.innerHTML = '';
+            
+            const selectedVolunteerId = volunteerSelect.value;
+            const selectedVolunteer = volunteers.find(v => v.id === selectedVolunteerId);
+
+            if (!selectedVolunteer) {
+                loadingSpinner.classList.add('hidden');
+                opportunityList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No volunteer profile selected.</p>';
+                return;
+            }
+
+            const scoredOpportunities = opportunities.map(opportunity => {
+                let score = 0;
+                const skillsMatchCount = selectedVolunteer.skills.filter(skill => opportunity.skillsNeeded.includes(skill)).length;
+                score += skillsMatchCount * 10;
+                const interestsMatchCount = selectedVolunteer.interests.filter(interest => opportunity.interestsMatch.includes(interest)).length;
+                score += interestsMatchCount * 5;
+                if (selectedVolunteer.location === opportunity.location) {
+                    score += 20;
+                }
+                const scheduleMatchCount = selectedVolunteer.schedule.filter(day => opportunity.scheduleNeeded.includes(day)).length;
+                score += scheduleMatchCount * 5;
+                score += opportunity.legitimacyScore * 3;
+
+                return { ...opportunity, score };
+            });
+
+            scoredOpportunities.sort((a, b) => b.score - a.score);
+            setTimeout(() => { // Simulate a network delay
+                loadingSpinner.classList.add('hidden');
+                renderVolunteerMatches(scoredOpportunities.slice(0, 5));
+            }, 1000);
+        }
+
+        function renderVolunteerMatches(matches) {
+            if (matches.length === 0) {
+                opportunityList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No matches found. Try a different volunteer profile.</p>';
+                return;
+            }
+            matches.forEach((match, index) => {
+                const scoreClass = match.score > 25 ? 'match-score-high' : match.score >= 15 ? 'match-score-medium' : 'match-score-low';
+                const card = document.createElement('div');
+                card.className = "card bg-white p-6 rounded-2xl shadow-md cursor-pointer";
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-900">${match.title}</h3>
+                        <div class="match-score ${scoreClass}">
+                            Score: ${match.score}
+                        </div>
+                    </div>
+                    <p class="text-gray-500 mt-1">${match.organization}</p>
+                    <p class="text-gray-600 mt-4 line-clamp-3">${match.description}</p>
+                `;
+                card.onclick = () => showOpportunityDetails(match);
+                opportunityList.appendChild(card);
+            });
+        }
+
+        function showOpportunityDetails(opportunity) {
+            const content = `
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">${opportunity.title}</h3>
+                <p class="text-gray-500 text-sm mb-4">${opportunity.organization} | ${opportunity.location}</p>
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-semibold text-gray-800">About the Opportunity:</p>
+                        <p class="text-gray-600">${opportunity.description}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">About the Organization:</p>
+                        <p class="text-gray-600">${opportunity.aboutOrg}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Skills Needed:</p>
+                        <p class="text-gray-600">${opportunity.skillsNeeded.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Interests Match:</p>
+                        <p class="text-gray-600">${opportunity.interestsMatch.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Schedule Needed:</p>
+                        <p class="text-gray-600">${opportunity.scheduleNeeded.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Legitimacy Score:</p>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="px-2 py-1 text-xs font-bold text-white rounded-full bg-blue-500">${opportunity.legitimacyScore}/10</span>
+                            <span class="text-xs text-gray-500">(AI-verified metric for trust)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 text-center">
+                    <a href="mailto:${opportunity.orgEmail}" class="inline-block px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out">
+                        Contact Organization
+                    </a>
+                </div>
+            `;
+            showModal(content);
+        }
+
+        // Functions for finding and rendering matches (Organization View)
+        function findOrgMatches() {
+            organizationResultsContainer.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+            volunteerList.innerHTML = '';
+
+            const selectedOrgName = organizationSelect.value;
+            const selectedOpportunities = opportunities.filter(o => o.organization === selectedOrgName);
+            if (selectedOpportunities.length === 0) {
+                loadingSpinner.classList.add('hidden');
+                volunteerList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No organization selected or no opportunities found.</p>';
+                return;
+            }
+            const selectedOpportunity = selectedOpportunities[0]; // Assuming one profile per organization for simplicity
+
+            const scoredVolunteers = volunteers.map(volunteer => {
+                let score = 0;
+                const skillsMatchCount = volunteer.skills.filter(skill => selectedOpportunity.skillsNeeded.includes(skill)).length;
+                score += skillsMatchCount * 10;
+                const interestsMatchCount = volunteer.interests.filter(interest => selectedOpportunity.interestsMatch.includes(interest)).length;
+                score += interestsMatchCount * 5;
+                if (volunteer.location === selectedOpportunity.location) {
+                    score += 20;
+                }
+                const scheduleMatchCount = volunteer.schedule.filter(day => selectedOpportunity.scheduleNeeded.includes(day)).length;
+                score += scheduleMatchCount * 5;
+                score += volunteer.legitimacyScore * 3;
+
+                return { ...volunteer, score };
+            });
+
+            scoredVolunteers.sort((a, b) => b.score - a.score);
+            setTimeout(() => { // Simulate a network delay
+                loadingSpinner.classList.add('hidden');
+                renderOrgMatches(scoredVolunteers.slice(0, 5));
+            }, 1000);
+        }
+
+        function renderOrgMatches(matches) {
+            if (matches.length === 0) {
+                volunteerList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No volunteer matches found for this organization.</p>';
+                return;
+            }
+            matches.forEach((match, index) => {
+                const scoreClass = match.score > 25 ? 'match-score-high' : match.score >= 15 ? 'match-score-medium' : 'match-score-low';
+                const card = document.createElement('div');
+                card.className = "card bg-white p-6 rounded-2xl shadow-md cursor-pointer";
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-900">${match.name}</h3>
+                        <div class="match-score ${scoreClass}">
+                            Score: ${match.score}
+                        </div>
+                    </div>
+                    <p class="text-gray-500 mt-1">${match.location}</p>
+                    <p class="text-gray-600 mt-4 line-clamp-3">Skills: ${match.skills.join(', ')}</p>
+                `;
+                card.onclick = () => showVolunteerDetails(match);
+                volunteerList.appendChild(card);
+            });
+        }
+        
+        function showVolunteerDetails(volunteer) {
+            const content = `
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">${volunteer.name}</h3>
+                <p class="text-gray-500 text-sm mb-4">Volunteer | ${volunteer.location}</p>
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-semibold text-gray-800">Skills:</p>
+                        <p class="text-gray-600">${volunteer.skills.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Interests:</p>
+                        <p class="text-gray-600">${volunteer.interests.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Available Days:</p>
+                        <p class="text-gray-600">${volunteer.schedule.join(', ')}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Legitimacy Score:</p>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="px-2 py-1 text-xs font-bold text-white rounded-full bg-blue-500">${volunteer.legitimacyScore}/10</span>
+                            <span class="text-xs text-gray-500">(AI-verified metric for trust)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 text-center">
+                    <a href="mailto:${volunteer.email}" class="inline-block px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out">
+                        Contact Volunteer
+                    </a>
+                </div>
+            `;
+            showModal(content);
+        }
+
+        // Functions for switching to Add Profile page
+        function goToPage(page) {
+            if (page === 'add-profile') {
+                mainView.classList.add('page-hidden');
+                addProfilePage.classList.remove('page-hidden');
+            } else {
+                mainView.classList.remove('page-hidden');
+                addProfilePage.classList.add('page-hidden');
+            }
+        }
+
+        // Event Listeners
+        volunteerTabBtn.addEventListener('click', () => switchTab('volunteer'));
+        organizationTabBtn.addEventListener('click', () => switchTab('organization'));
+        findVolunteerMatchesBtn.addEventListener('click', findVolunteerMatches);
+        findOrgMatchesBtn.addEventListener('click', findOrgMatches);
+        modalCloseBtn.addEventListener('click', hideModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+        goToAddProfileBtn.addEventListener('click', () => goToPage('add-profile'));
+        backToMainBtn.addEventListener('click', () => goToPage('main-view'));
+
+        // Handle form submission for adding a profile
+        addProfileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const profileType = profileTypeSelect.value;
+            const name = document.getElementById('name').value;
+            const location = document.getElementById('location').value;
+            const email = document.getElementById('email').value;
+
+            if (profileType === 'volunteer') {
+                const skills = document.getElementById('skills').value.split(',').map(s => s.trim()).filter(s => s);
+                const interests = document.getElementById('interests').value.split(',').map(s => s.trim()).filter(s => s);
+                const schedule = document.getElementById('schedule').value.split(',').map(s => s.trim()).filter(s => s);
+                const legitimacyScore = parseInt(document.getElementById('legitimacy-score').value);
+                volunteers.push({ id: `v${volunteers.length + 1}`, name, location, email, skills, interests, schedule, legitimacyScore });
+            } else if (profileType === 'organization') {
+                const title = document.getElementById('title').value;
+                const aboutOrg = document.getElementById('about-org').value;
+                const description = document.getElementById('description').value;
+                const skillsNeeded = document.getElementById('skills-needed').value.split(',').map(s => s.trim()).filter(s => s);
+                const interestsMatch = document.getElementById('interests-match').value.split(',').map(s => s.trim()).filter(s => s);
+                const scheduleNeeded = document.getElementById('schedule-needed').value.split(',').map(s => s.trim()).filter(s => s);
+                const orgLegitimacy = parseInt(document.getElementById('org-legitimacy').value);
+                opportunities.push({ id: `o${opportunities.length + 1}`, organization: name, title, aboutOrg, description, skillsNeeded, interestsMatch, scheduleNeeded, location, orgEmail: email, legitimacyScore: orgLegitimacy });
+            }
+
+            // Show success message
+            addProfileStatus.classList.remove('hidden');
+            addProfileStatus.classList.remove('text-red-500');
+            addProfileStatus.classList.add('text-green-500');
+            addProfileStatus.textContent = "Profile added successfully!";
+            setTimeout(() => {
+                addProfileStatus.classList.add('hidden');
+                addProfileForm.reset();
+                initializeSelects();
+                goToPage('main-view');
+                switchTab(profileType); // Switch to the relevant view after adding
+            }, 1500);
+        });
+
+        // Handle field visibility based on profile type
+        profileTypeSelect.addEventListener('change', () => {
+            if (profileTypeSelect.value === 'volunteer') {
+                volunteerFields.classList.remove('hidden');
+                organizationFields.classList.add('hidden');
+            } else {
+                volunteerFields.classList.add('hidden');
+                organizationFields.classList.remove('hidden');
+            }
+        });
+
+        // Initial setup and splash screen logic
+        window.onload = function() {
+            // Wait 2 seconds, then fade out the splash screen and fade in the main content
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    mainContent.classList.add('visible');
+                    initializeSelects();
+                    switchTab('volunteer');
+                }, 500); // This delay should match the CSS transition duration
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
