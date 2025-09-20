@@ -21,6 +21,9 @@ INSTRUCTIONS TO MAKE THE "CONTACT ORGANIZATION" OR "CONTACT VOLUNTEER" BUTTON IN
 
 The error occurs because your Windows 11 system doesn't have a default email application assigned to open and send emails for you.
 
+IF YOU USE THE FILE IN YOUR MOBILE THE CONTACT ORGANIZATION BUTTON WORKS AS INTENDED AS MOBILES HAVE A DEFAULT MAIL APP ASSIGEND TO HANDLE THESE REQUESTS.
+
+
 
 Setting Your Default Mail App in Windows 11:-
 
@@ -44,3 +47,4 @@ Once you have a default app set, close the settings window and try clicking the 
                                          THANK YOU
 ____________________________________________________________________________________________________________________________________________________________________
 ____________________________________________________________________________________________________________________________________________________________________
+
